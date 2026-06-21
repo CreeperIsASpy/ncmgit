@@ -68,6 +68,7 @@ async function pullCommand() {
   }
 
   repo.saveHead(rootDir, playlistId)
+  repo.saveOrder(rootDir, tracks.map(t => t.id))
 
   console.log(`拉取完成: 新增 ${added} 首, 删除 ${removed} 首`)
   if (playlist.name) {

@@ -1,7 +1,8 @@
 const path = require('path')
 const ncm = require('../core/ncm-client')
 const tracker = require('../core/tracker')
-const { requireNcmgitRoot, writeMusicFile, sanitizeFilename } = require('../utils/file')
+const repo = require('../core/repo')
+const { requireNcmgitRoot, writeMusicFile, sanitizeFilename, listMusicFiles, readMusicFile } = require('../utils/file')
 
 async function addCommand(target, options = {}) {
   if (options.search) {
@@ -13,10 +14,30 @@ async function addCommand(target, options = {}) {
 
   if (!target || target === '.') {
     tracker.stageAll(rootDir)
+    const files = listMusicFiles(rootDir)
+    const order = repo.loadOrder(rootDir)
+    let updated = false
+    for (const f of files) {
+      const data = readMusicFile(rootDir, f)
+      if (data && data.nid && !order.includes(data.nid)) {
+        order.unshift(data.nid)
+        updated = true
+      }
+    }
+    if (updated) repo.saveOrder(rootDir, order)
     console.log('已暂存所有歌曲文件')
   } else {
+    const filename = path.basename(target)
     tracker.stageFile(rootDir, target)
-    console.log(`已暂存: ${path.basename(target)}`)
+    const data = readMusicFile(rootDir, filename)
+    if (data && data.nid) {
+      const order = repo.loadOrder(rootDir)
+      if (!order.includes(data.nid)) {
+        order.unshift(data.nid)
+        repo.saveOrder(rootDir, order)
+      }
+    }
+    console.log(`已暂存: ${filename}`)
   }
 }
 
@@ -75,6 +96,13 @@ async function addBySearch(keyword) {
     writeMusicFile(rootDir, filename, songData)
 
     tracker.stageFile(rootDir, filename)
+
+    const order = repo.loadOrder(rootDir)
+    if (!order.includes(song.id)) {
+      order.unshift(song.id)
+      repo.saveOrder(rootDir, order)
+    }
+
     added++
   }
 

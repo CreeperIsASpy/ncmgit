@@ -13,7 +13,7 @@ async function pushCommand() {
   const playlistId = config.remote.playlistId
   const loggedIn = await ncm.isLoggedIn()
   if (!loggedIn) {
-    throw new Error('未登录，请先运行: ncmgit login')
+    throw new Error('未登录，请先运行: ncmgit auth login')
   }
 
   console.log(`正在获取远程歌单 ${playlistId} ...`)
@@ -26,6 +26,7 @@ async function pushCommand() {
 
   const remoteTracks = (remoteDetail && remoteDetail.playlist && remoteDetail.playlist.tracks) || []
   const remoteIds = new Set(remoteTracks.map(t => t.id))
+  const remoteIdOrder = remoteTracks.map(t => t.id)
 
   const localFiles = listMusicFiles(rootDir)
   const localIds = new Set()
@@ -38,6 +39,13 @@ async function pushCommand() {
       localData.push(data)
     }
   }
+
+  const localIdOrder = repo.loadOrder(rootDir)
+  const orderValid = localIdOrder.length > 0 &&
+    localIdOrder.every(id => localIds.has(id)) &&
+    localIds.size === localIdOrder.length
+
+  let changed = false
 
   const toAdd = []
   const toRemove = []
@@ -54,33 +62,58 @@ async function pushCommand() {
     }
   }
 
-  if (toAdd.length === 0 && toRemove.length === 0) {
+  if (toAdd.length > 0 || toRemove.length > 0) {
+    console.log(`变更: 添加 ${toAdd.length} 首, 删除 ${toRemove.length} 首`)
+
+    for (const track of toRemove) {
+      console.log(`  删除: ${track.name} - ${(track.ar || []).map(a => a.name).join(', ')}`)
+      try {
+        await ncm.playlistTracks('del', playlistId, String(track.id))
+      } catch (err) {
+        console.error(`  删除失败: ${err.message}`)
+      }
+    }
+
+    for (const data of toAdd) {
+      console.log(`  添加: ${data.name} - ${data.artists.join(', ')}`)
+      try {
+        await ncm.playlistTracks('add', playlistId, String(data.nid))
+      } catch (err) {
+        console.error(`  添加失败: ${err.message}`)
+      }
+    }
+
+    changed = true
+  }
+
+  if (orderValid && !arraysEqual(localIdOrder, remoteIdOrder)) {
+    console.log('正在更新歌曲顺序...')
+    try {
+      await ncm.songOrderUpdate(playlistId, localIdOrder)
+      console.log('顺序已更新')
+      changed = true
+    } catch (err) {
+      console.error(`更新顺序失败: ${err.message}`)
+    }
+  }
+
+  if (!changed) {
     console.log('Everything up-to-date')
-    return
+  } else {
+    const cleanOrder = (localIdOrder.length > 0 ? localIdOrder : localData.map(d => d.nid))
+      .filter(id => localIds.has(id))
+    repo.saveOrder(rootDir, cleanOrder)
+    repo.saveHead(rootDir, playlistId)
+    console.log('\n推送完成!')
   }
+}
 
-  console.log(`变更: 添加 ${toAdd.length} 首, 删除 ${toRemove.length} 首`)
-
-  for (const track of toRemove) {
-    console.log(`  删除: ${track.name} - ${(track.ar || []).map(a => a.name).join(', ')}`)
-    try {
-      await ncm.playlistTracks('del', playlistId, track.id)
-    } catch (err) {
-      console.error(`  删除失败: ${err.message}`)
-    }
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
   }
-
-  for (const data of toAdd) {
-    console.log(`  添加: ${data.name} - ${data.artists.join(', ')}`)
-    try {
-      await ncm.playlistTracks('add', playlistId, data.nid)
-    } catch (err) {
-      console.error(`  添加失败: ${err.message}`)
-    }
-  }
-
-  repo.saveHead(rootDir, playlistId)
-  console.log('\n推送完成!')
+  return true
 }
 
 module.exports = { pushCommand }

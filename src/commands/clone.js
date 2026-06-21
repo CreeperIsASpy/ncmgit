@@ -40,6 +40,8 @@ async function cloneCommand(playlistId, dirname) {
   const tracks = playlist.tracks || []
   console.log(`歌单 "${playlistName}" 包含 ${tracks.length} 首歌曲`)
 
+  const order = []
+
   for (const track of tracks) {
     const songData = {
       type: 'netease',
@@ -56,7 +58,10 @@ async function cloneCommand(playlistId, dirname) {
     writeMusicFile(targetDir, filename, songData)
 
     repo.writeObject(targetDir, track.id, songData)
+    order.push(track.id)
   }
+
+  repo.saveOrder(targetDir, order)
 
   console.log(`已克隆到 ${targetDir}`)
   console.log(`  ${tracks.length} 首歌曲已保存`)

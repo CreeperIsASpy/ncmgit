@@ -13,6 +13,7 @@ function initRepo(dir) {
   fs.mkdirSync(path.join(ncmgitPath, 'objects'))
   fs.writeFileSync(path.join(ncmgitPath, 'HEAD'), '')
   fs.writeFileSync(path.join(ncmgitPath, 'index'), '[]')
+  fs.writeFileSync(path.join(ncmgitPath, 'ORDER'), '[]\n')
   fs.writeFileSync(path.join(ncmgitPath, 'config'), JSON.stringify({
     remote: { playlistId: null, playlistName: null },
   }, null, 2))
@@ -77,6 +78,17 @@ function readObject(rootDir, id) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
 }
 
+function loadOrder(rootDir) {
+  const orderPath = path.join(rootDir, NCMGIT_DIR, 'ORDER')
+  if (!fs.existsSync(orderPath)) return []
+  return JSON.parse(fs.readFileSync(orderPath, 'utf-8'))
+}
+
+function saveOrder(rootDir, order) {
+  const orderPath = path.join(rootDir, NCMGIT_DIR, 'ORDER')
+  fs.writeFileSync(orderPath, JSON.stringify(order, null, 2) + '\n')
+}
+
 function listObjects(rootDir) {
   const objects = []
   const objectsDir = path.join(rootDir, NCMGIT_DIR, 'objects')
@@ -106,4 +118,6 @@ module.exports = {
   writeObject,
   readObject,
   listObjects,
+  loadOrder,
+  saveOrder,
 }
