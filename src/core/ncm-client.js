@@ -1,6 +1,22 @@
 const { loadAuth, saveAuth, loadGlobalConfig } = require('../utils/config')
 
 let api = null
+let _initDone = false
+let _initPromise = null
+
+async function initApi() {
+  if (_initDone) return
+  if (_initPromise) return _initPromise
+
+  _initPromise = (async () => {
+    try {
+      const generateConfig = require('@neteasecloudmusicapienhanced/api/generateConfig')
+      await generateConfig()
+    } catch (_) {}
+    _initDone = true
+  })()
+  await _initPromise
+}
 
 function getApi() {
   if (!api) {
@@ -15,32 +31,23 @@ function getApi() {
   return api
 }
 
-function resolveEndpoints() {
-  const config = loadGlobalConfig()
-  const base = (config && config.apiBase) || 'http://localhost:3000'
-  return base.replace(/\/+$/, '')
-}
-
 async function request(endpoint, params = {}) {
+  await initApi()
   const ncm = getApi()
   const fn = ncm[endpoint]
   if (typeof fn !== 'function') {
     throw new Error(`未知的 API 端点: ${endpoint}`)
   }
 
-  const config = loadGlobalConfig()
-  const apiBase = (config && config.apiBase) || 'http://localhost:3000'
   const auth = loadAuth()
+  const config = loadGlobalConfig()
+
+  const proxy = params.proxy !== undefined ? params.proxy : (config && config.proxy) || undefined
 
   const mergedParams = {
-    ...params,
-    realIP: params.realIP || undefined,
     cookie: params.cookie || (auth && auth.cookie) || '',
-    proxy: params.proxy || undefined,
-  }
-
-  if (apiBase) {
-    mergedParams.realIP = mergedParams.realIP || undefined
+    ...params,
+    proxy,
   }
 
   const result = await fn(mergedParams)
@@ -49,6 +56,34 @@ async function request(endpoint, params = {}) {
 
 async function loginCellphone(phone, password) {
   const result = await request('login_cellphone', { phone, password })
+  if (result.body && result.body.cookie) {
+    saveAuth({ cookie: result.body.cookie, account: phone })
+  }
+  return result
+}
+
+async function loginQrKey() {
+  const result = await request('login_qr_key')
+  return result.body && result.body.data && result.body.data.unikey
+}
+
+async function loginQrCreate(key) {
+  const result = await request('login_qr_create', { key, qrimg: true })
+  return result.body && result.body.data
+}
+
+async function loginQrCheck(key) {
+  const result = await request('login_qr_check', { key })
+  return result.body
+}
+
+async function captchaSent(phone) {
+  const result = await request('captcha_sent', { phone })
+  return result.body
+}
+
+async function loginCellphoneCaptcha(phone, captcha) {
+  const result = await request('login_cellphone', { phone, captcha })
   if (result.body && result.body.cookie) {
     saveAuth({ cookie: result.body.cookie, account: phone })
   }
@@ -129,7 +164,12 @@ async function playlistSubscribe(op, pid) {
 module.exports = {
   request,
   loginCellphone,
+  loginCellphoneCaptcha,
+  captchaSent,
   loginEmail,
+  loginQrKey,
+  loginQrCreate,
+  loginQrCheck,
   getPlaylistDetail,
   getUserPlaylists,
   getAccountInfo,

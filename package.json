@@ -11,9 +11,15 @@
     "src/"
   ],
   "scripts": {},
-  "keywords": ["netease", "cloudmusic", "git", "playlist"],
+  "keywords": [
+    "netease",
+    "cloudmusic",
+    "git",
+    "playlist"
+  ],
   "license": "MIT",
   "dependencies": {
-    "@neteasecloudmusicapienhanced/api": "^4.36.1"
+    "@neteasecloudmusicapienhanced/api": "^4.36.1",
+    "qrcode-terminal": "^0.12.0"
   }
 }

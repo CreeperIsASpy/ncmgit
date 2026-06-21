@@ -20,7 +20,8 @@ ncmgit - 用 Git 管理网易云音乐歌单
   push                推送到网易云歌单
   pull                从网易云歌单拉取
   remote [show|set|list] 管理远程歌单
-  help                显示帮助信息
+  config [key] [value]  查看或修改全局配置
+  help                  显示帮助信息
 
  示例:
   ncmgit auth login
@@ -115,6 +116,11 @@ async function main() {
       case 'remote': {
         const { remoteCommand } = require('../src/commands/remote')
         await remoteCommand(positional[0], positional[1])
+        break
+      }
+      case 'config': {
+        const { configCommand } = require('../src/commands/config')
+        configCommand(positional[0], positional[1])
         break
       }
       default:

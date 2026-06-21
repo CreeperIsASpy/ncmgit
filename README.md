@@ -64,7 +64,8 @@ my-playlist/          # 一个 ncmgit 仓库
 ## 安装
 
 ```bash
-npm install -g ncmgit
+git clone https://github.com/your/ncmgit.git && cd ncmgit
+npm install && npm link
 ```
 
 依赖 [NeteaseCloudMusicApiEnhanced/api-enhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced) 作为后端。你需要先启动该 API 服务：
@@ -76,12 +77,34 @@ pnpm i
 node app.js   # 默认 http://localhost:3000
 ```
 
+### 配置 API 地址
+
+```bash
+ncmgit config apiBase http://localhost:3000
+```
+
+### 解决"登录环境异常"
+
+如果你在境外，可配置一个中国代理：
+
+```bash
+ncmgit config proxy http://your-proxy:port
+```
+
+也可手动指定 realIP：
+
+```bash
+ncmgit config realIP 116.1.2.3
+```
+
+境内用户一般不需要额外配置。
+
 ## 使用
 
 ### 登录
 
 ```bash
-ncmgit auth login       # 按提示输入手机号/邮箱/密码
+ncmgit auth login       # 扫码 / 验证码 / 手机号 / 邮箱
 ncmgit auth status      # 查看登录状态
 ncmgit auth logout      # 登出
 ```
