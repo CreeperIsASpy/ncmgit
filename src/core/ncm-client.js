@@ -134,6 +134,11 @@ async function playlistTracks(op, pid, tracks) {
   return result.body
 }
 
+async function playlistUpdate(id, name, desc, tags) {
+  const result = await request('playlist_update', { id, name, desc, tags })
+  return result.body
+}
+
 async function songOrderUpdate(pid, trackIds) {
   const result = await request('song_order_update', { pid, ids: trackIds })
   return result.body
@@ -183,6 +188,7 @@ module.exports = {
   playlistCreate,
   playlistTracks,
   songOrderUpdate,
+  playlistUpdate,
   playlistDelete,
   playlistSubscribe,
   logout,

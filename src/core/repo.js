@@ -15,7 +15,7 @@ function initRepo(dir) {
   fs.writeFileSync(path.join(ncmgitPath, 'index'), '[]')
   fs.writeFileSync(path.join(ncmgitPath, 'ORDER'), '[]\n')
   fs.writeFileSync(path.join(ncmgitPath, 'config'), JSON.stringify({
-    remote: { playlistId: null, playlistName: null },
+    remote: { playlistId: null, playlistName: null, desc: '', tags: '' },
   }, null, 2))
 
   return ncmgitPath

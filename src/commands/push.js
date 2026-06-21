@@ -86,6 +86,25 @@ async function pushCommand() {
     changed = true
   }
 
+  const remoteMeta = remoteDetail && remoteDetail.playlist
+  const localName = (config.remote && config.remote.playlistName) || ''
+  const localDesc = (config.remote && config.remote.desc) || ''
+  const localTags = (config.remote && config.remote.tags) || ''
+  const remoteName = (remoteMeta && remoteMeta.name) || ''
+  const remoteDesc = (remoteMeta && remoteMeta.description) || ''
+  const remoteTags = (remoteMeta && remoteMeta.tags || []).join(',')
+
+  if (localName !== remoteName || localDesc !== remoteDesc || localTags !== remoteTags) {
+    console.log('正在更新歌单信息...')
+    try {
+      await ncm.playlistUpdate(playlistId, localName, localDesc, localTags)
+      console.log('歌单信息已更新')
+      changed = true
+    } catch (err) {
+      console.error(`更新歌单信息失败: ${err.message}`)
+    }
+  }
+
   if (orderValid && !arraysEqual(localIdOrder, remoteIdOrder)) {
     console.log('正在更新歌曲顺序...')
     try {

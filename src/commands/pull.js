@@ -70,12 +70,13 @@ async function pullCommand() {
   repo.saveHead(rootDir, playlistId)
   repo.saveOrder(rootDir, tracks.map(t => t.id))
 
+  const cfg = repo.loadConfig(rootDir)
+  cfg.remote.playlistName = playlist.name || cfg.remote.playlistName
+  cfg.remote.desc = playlist.description || ''
+  cfg.remote.tags = (playlist.tags || []).join(',')
+  repo.saveConfig(rootDir, cfg)
+
   console.log(`拉取完成: 新增 ${added} 首, 删除 ${removed} 首`)
-  if (playlist.name) {
-    const cfg = repo.loadConfig(rootDir)
-    cfg.remote.playlistName = playlist.name
-    repo.saveConfig(rootDir, cfg)
-  }
 }
 
 module.exports = { pullCommand }

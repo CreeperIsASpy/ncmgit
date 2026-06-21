@@ -11,7 +11,7 @@ ncmgit - 用 Git 管理网易云音乐歌单
 
  命令:
   auth <login|status|logout>  管理登录状态
-  init [dir]                  初始化一个新的歌单仓库
+  init [dir] [--create-remote]  初始化一个新的歌单仓库
   clone <playlist-id> 克隆一个网易云歌单到本地
   status              查看工作区状态
   add [file]          暂存歌曲变更 (add . 暂存全部)
@@ -19,7 +19,7 @@ ncmgit - 用 Git 管理网易云音乐歌单
   commit -m <msg>     提交暂存的变更
   push                推送到网易云歌单
   pull                从网易云歌单拉取
-  remote [show|set|list] 管理远程歌单
+  remote <sub>           管理远程歌单 (show/set/create/delete/list/name/desc/tags)
   move <track-id> <pos>  移动歌曲到指定位置 (0=最前)
   config [key] [value]  查看或修改全局配置
   help                  显示帮助信息
@@ -33,6 +33,11 @@ ncmgit - 用 Git 管理网易云音乐歌单
   ncmgit add 晴天.json
   ncmgit commit -m "添加晴天"
   ncmgit push
+  ncmgit remote create "新歌单"
+  ncmgit remote delete
+  ncmgit remote name "新歌单名"
+  ncmgit remote desc "歌单描述"
+  ncmgit remote tags "华语,流行,周杰伦"
   ncmgit auth logout
 `)
 }
@@ -53,8 +58,8 @@ function parseArgs(argv) {
       options.search = args[i + 1] || ''
       i += 2
     } else if (args[i] === '--create-remote') {
-      options.createRemote = args[i + 1] !== 'false'
-      i += 2
+      options.createRemote = true
+      i++
     } else {
       positional.push(args[i])
       i++

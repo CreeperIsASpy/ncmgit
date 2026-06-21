@@ -115,8 +115,11 @@ ncmgit auth logout      # 登出
 ### 初始化仓库 / 克隆歌单
 
 ```bash
-# 创建一个空仓库 (同时创建空白歌单)
+# 创建一个本地仓库
 ncmgit init my-playlist
+
+# 创建本地仓库并同步创建远程歌单
+ncmgit init my-playlist --create-remote
 
 # 克隆已有歌单
 ncmgit clone <playlist-id>

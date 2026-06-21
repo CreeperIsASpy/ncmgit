@@ -33,7 +33,12 @@ async function cloneCommand(playlistId, dirname) {
   repo.initRepo(targetDir)
 
   const config = repo.loadConfig(targetDir)
-  config.remote = { playlistId: playlistId, playlistName: playlistName }
+  config.remote = {
+    playlistId: playlistId,
+    playlistName: playlistName,
+    desc: playlist.description || '',
+    tags: (playlist.tags || []).join(','),
+  }
   repo.saveConfig(targetDir, config)
   repo.saveHead(targetDir, playlistId)
 
