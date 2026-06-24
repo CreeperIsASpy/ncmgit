@@ -2,7 +2,6 @@
   "name": "ncmgit",
   "version": "0.1.0",
   "description": "用 Git 的方式管理网易云音乐歌单",
-  "main": "src/index.js",
   "bin": {
     "ncmgit": "./bin/ncmgit.js"
   },
@@ -11,6 +10,7 @@
     "src/"
   ],
   "scripts": {},
+  "packageManager": "pnpm@11.6.0",
   "keywords": [
     "netease",
     "cloudmusic",
