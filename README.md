@@ -211,6 +211,3 @@ ncmgit (CLI)
     └── src/utils/       工具函数
 ```
 
-## License
-
-MIT
