@@ -65,8 +65,8 @@ my-playlist/          # 一个 ncmgit 仓库
 ## 安装
 
 ```bash
-git clone https://github.com/your/ncmgit.git && cd ncmgit
-pnpm install && pnpm link --global
+pnpm add -g ncmgit
+# 或 npm i -g ncmgit
 ```
 
 依赖 [NeteaseCloudMusicApiEnhanced/api-enhanced](https://github.com/neteasecloudmusicapienhanced/api-enhanced) 作为后端。你需要先启动该 API 服务：
