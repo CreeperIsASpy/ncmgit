@@ -36,6 +36,7 @@ async function pullCommand() {
   let removed = 0
 
   const remoteIds = new Set(tracks.map(t => t.id))
+  const usedNames = new Set()
 
   for (const track of tracks) {
     const songData = {
@@ -49,7 +50,13 @@ async function pullCommand() {
     }
 
     const artistStr = songData.artists.join(', ')
-    const filename = sanitizeFilename(`${songData.name} - ${artistStr}`) + '.json'
+    let baseName = sanitizeFilename(`${songData.name} - ${artistStr}`)
+    let filename = baseName + '.json'
+    if (usedNames.has(filename)) {
+      filename = sanitizeFilename(`${baseName} - ${track.id}`) + '.json'
+      console.warn(`警告: 歌曲 "${songData.name} - ${artistStr}" 重复，已重命名为 ${filename}`)
+    }
+    usedNames.add(filename)
 
     const existingObj = repo.readObject(rootDir, track.id)
     if (!existingObj || JSON.stringify(existingObj) !== JSON.stringify(songData)) {

@@ -77,6 +77,11 @@ async function addBySearch(keyword) {
   const indices = trimmed.split(',').map(s => parseInt(s.trim()) - 1)
   let added = 0
 
+  const usedNames = new Set()
+  for (const f of listMusicFiles(rootDir)) {
+    usedNames.add(f)
+  }
+
   for (const idx of indices) {
     if (idx < 0 || idx >= songs.length) continue
     const song = songs[idx]
@@ -92,7 +97,13 @@ async function addBySearch(keyword) {
     }
 
     const artistStr = songData.artists.join(', ')
-    const filename = sanitizeFilename(`${songData.name} - ${artistStr}`) + '.json'
+    let baseName = sanitizeFilename(`${songData.name} - ${artistStr}`)
+    let filename = baseName + '.json'
+    if (usedNames.has(filename)) {
+      filename = sanitizeFilename(`${baseName} - ${song.id}`) + '.json'
+      console.warn(`警告: 歌曲 "${songData.name} - ${artistStr}" 重复，已重命名为 ${filename}`)
+    }
+    usedNames.add(filename)
     writeMusicFile(rootDir, filename, songData)
 
     tracker.stageFile(rootDir, filename)

@@ -46,6 +46,7 @@ async function cloneCommand(playlistId, dirname) {
   console.log(`歌单 "${playlistName}" 包含 ${tracks.length} 首歌曲`)
 
   const order = []
+  const usedNames = new Set()
 
   for (const track of tracks) {
     const songData = {
@@ -59,7 +60,13 @@ async function cloneCommand(playlistId, dirname) {
     }
 
     const artistStr = songData.artists.join(', ')
-    const filename = sanitizeFilename(`${songData.name} - ${artistStr}`) + '.json'
+    let baseName = sanitizeFilename(`${songData.name} - ${artistStr}`)
+    let filename = baseName + '.json'
+    if (usedNames.has(filename)) {
+      filename = sanitizeFilename(`${baseName} - ${track.id}`) + '.json'
+      console.warn(`警告: 歌曲 "${songData.name} - ${artistStr}" 重复，已重命名为 ${filename}`)
+    }
+    usedNames.add(filename)
     writeMusicFile(targetDir, filename, songData)
 
     repo.writeObject(targetDir, track.id, songData)
