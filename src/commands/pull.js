@@ -17,7 +17,7 @@ async function pullCommand() {
   console.log(`正在拉取歌单 ${playlistId} ...`)
   let detail
   try {
-    detail = await ncm.getPlaylistDetail(playlistId)
+    detail = await ncm.getAllPlaylistTracks(playlistId)
   } catch (err) {
     throw new Error(`拉取失败: ${err.message}`)
   }

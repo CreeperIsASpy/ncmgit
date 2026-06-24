@@ -13,7 +13,7 @@ async function cloneCommand(playlistId, dirname) {
   console.log(`正在获取歌单 ${playlistId} ...`)
   let detail
   try {
-    detail = await ncm.getPlaylistDetail(playlistId)
+    detail = await ncm.getAllPlaylistTracks(playlistId)
   } catch (err) {
     throw new Error(`获取歌单失败: ${err.message}`)
   }

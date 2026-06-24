@@ -103,6 +103,40 @@ async function getPlaylistDetail(playlistId) {
   return result.body
 }
 
+async function getAllPlaylistTracks(playlistId) {
+  const BATCH_SIZE = 1000
+
+  const result = await request('playlist_detail', { id: playlistId })
+  const body = result.body
+
+  if (!body || !body.playlist) return body
+
+  const playlist = body.playlist
+  const trackIds = playlist.trackIds || []
+
+  if (trackIds.length <= (playlist.tracks || []).length) {
+    return body
+  }
+
+  const allTracks = []
+
+  for (let i = 0; i < trackIds.length; i += BATCH_SIZE) {
+    const batch = trackIds.slice(i, i + BATCH_SIZE)
+    const ids = batch.map(t => t.id).join(',')
+    try {
+      const songResult = await request('song_detail', { ids })
+      if (songResult.body && songResult.body.songs) {
+        allTracks.push(...songResult.body.songs)
+      }
+    } catch (err) {
+      console.error(`获取歌曲详情失败 (${i + 1}-${Math.min(i + BATCH_SIZE, trackIds.length)}): ${err.message}`)
+    }
+  }
+
+  playlist.tracks = allTracks
+  return body
+}
+
 async function getUserPlaylists(uid) {
   const result = await request('user_playlist', { uid })
   return result.body
@@ -181,6 +215,7 @@ module.exports = {
   loginQrCreate,
   loginQrCheck,
   getPlaylistDetail,
+  getAllPlaylistTracks,
   getUserPlaylists,
   getAccountInfo,
   searchSongs,

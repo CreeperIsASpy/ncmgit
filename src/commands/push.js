@@ -19,7 +19,7 @@ async function pushCommand() {
   console.log(`正在获取远程歌单 ${playlistId} ...`)
   let remoteDetail
   try {
-    remoteDetail = await ncm.getPlaylistDetail(playlistId)
+    remoteDetail = await ncm.getAllPlaylistTracks(playlistId)
   } catch (err) {
     throw new Error(`获取远程歌单失败: ${err.message}`)
   }
